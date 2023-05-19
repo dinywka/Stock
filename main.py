@@ -5,10 +5,6 @@ import sys
 import requests
 import yfinance as yf
 import datetime as dt
-from get_all_tickers import get_tickers as gt
-
-list_of_tickers = gt.get_tickers()
-print(list_of_tickers)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -29,12 +25,8 @@ class MainWindow(QMainWindow):
         self.combobox_2.setEditable(True)
         self.list1 = ["Выбрать", "USD/KZT", "EUR/KZT", "RUB/KZT", "KZT/USD", "KZT/EUR", "KZT/RUB"]
         self.comboBox.addItems(self.list1)
-        self.list2 = []
-        self.combobox_2.addItems(self.list2)
-
-        # Connect the signal of QComboBox
-        self.combobox.currentIndexChanged.connect(self.on_combobox_index_changed)
-        self.combobox_2.currentIndexChanged.connect(self.on_combobox_index_changed)
+        self.pushButton.clicked.connect(self.on_combobox_index_changed)
+        self.pushButton_2.clicked.connect(self.tickerData)
 
         self.label_5.setText(f"{self.on_combobox_index_changed(index='')}")
 
@@ -57,27 +49,27 @@ class MainWindow(QMainWindow):
         index = self.combobox.currentText()
         base_currency = index[:3]
         target_currency = index[4:]
-        print(base_currency)
-        print(target_currency)
-        ticker = f"{base_currency}{target_currency}=X"  # Create the ticker symbol
+        ticker = f"{base_currency}{target_currency}=X"
         start_date = dt.datetime.today() - dt.timedelta(days = 1)
-        print(start_date)
         end_date = dt.datetime.today()
-        print(end_date)
         data = yf.download(ticker, start_date, end_date)
         if data.empty:
             self.label_5.setText("No data available for the selected currency pair.")
         else:
-            exchange_rate = data["Close"].iloc[0]  # Get the exchange rate for the current date
-            print((f"{base_currency} to {target_currency} exchange rate: {exchange_rate}"))
+            exchange_rate = data["Close"].iloc[0]
             self.label_5.setText(f"{exchange_rate}")
 
-    def get_all_tickers():
-        tickers = yf.Tickers()  # Create an instance of Tickers
-        ticker_symbols = list(tickers.tickers.keys())
-        print("All Tickers:", ticker_symbols)  # Print the ticker symbols
-        return ticker_symbols
-
+    def tickerData(self):
+        ticker = self.combobox_2.currentText()
+        start_date = dt.datetime.today() - dt.timedelta(days=1)
+        end_date = dt.datetime.today()
+        data = yf.download(ticker, start_date, end_date)
+        if data.empty:
+            print("No data available for the selected currency pair.")
+        else:
+            close_data = data["Close"]
+            close_price = close_data.iloc[0]
+            self.label_6.setText(str(close_price)) 
 
 app = QApplication(sys.argv)
 window = MainWindow()
